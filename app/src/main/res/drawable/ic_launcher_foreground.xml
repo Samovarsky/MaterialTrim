@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- плашка выделения -->
+    <path android:fillColor="#33FFFFFF"
+        android:pathData="M36,34 H72 V74 H36 Z" />
+    <!-- левый бегунок -->
+    <path android:fillColor="#FFC9C5F0"
+        android:pathData="M32,30 H40 V78 H32 Z" />
+    <!-- правый бегунок -->
+    <path android:fillColor="#FFC9C5F0"
+        android:pathData="M68,30 H76 V78 H68 Z" />
+</vector>
