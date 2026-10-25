@@ -6,7 +6,7 @@
 [![Android](https://img.shields.io/badge/Android-24+-3DDC84?logo=android)](https://developer.android.com/)
 [![FFmpegKit](https://img.shields.io/badge/FFmpegKit-GPL-red)](https://github.com/arthenica/ffmpeg-kit)
 
-An offline audio & video editor for Android, built with Jetpack Compose and FFmpegKit. Trim, merge, convert, apply effects, edit metadata, export GIFs — all on device. No ads, no tracking, no network.
+An offline audio & video editor for Android, built with Jetpack Compose and FFmpegKit. Trim, merge, convert, apply effects, edit metadata, export GIFs — all on device. No ads,no network.
 
 > [Читать по-русски ↓](#material-trim-русский)
 
@@ -65,8 +65,8 @@ This project is licensed under the **GNU General Public License v3.0** — see [
 
 # Material Trim (русский)
 
-Оффлайн-редактор аудио и видео для Android на Jetpack Compose и FFmpegKit: обрезка, склеивание, конвертация, эффекты, метаданные, экспорт GIF — всё прямо на устройстве. Без рекламы, без трекинга, без сети.
-
+Оффлайн-редактор аудио и видео для Android на Jetpack Compose и FFmpegKit: обрезка, склеивание, конвертация, эффекты, метаданные, экспорт GIF — всё прямо на устройстве. Без рекламы, без сети.
+ 
 ## Возможности
 
 | Категория | Что умеет |
