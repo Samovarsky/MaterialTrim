@@ -95,6 +95,16 @@ This project is licensed under the **GNU General Public License v3.0** — see [
 
 Требования: Android Studio Ladybug+, JDK 17, AGP 9.x. Команды клонирования и сборки — в английской секции выше (`./gradlew assembleDebug`).
 
+## Зависимости
+
+| Библиотека | Лицензия |
+|---|---|
+| FFmpegKit (GPL build) | GPL-3.0 |
+| libx264 | GPL-2.0+ |
+| libopenh264 | BSD-2-Clause |
+| Jetpack Compose, Material 3 | Apache-2.0 |
+| AndroidX (Lifecycle, DocumentFile, Activity) | Apache-2.0 |
+
 ## Разработка / помощь ИИ
 
 Проект создавался с использованием генеративного ИИ-ассистента для
