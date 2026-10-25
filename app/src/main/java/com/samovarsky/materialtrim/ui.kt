@@ -98,6 +98,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
+
 fun formatDuration(millis: Long): String {
     val s = (millis / 1000) % 60
     val m = (millis / 1000) / 60
@@ -1834,6 +1837,38 @@ fun SettingsScreen(
                         Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(selected = state.themeMode == code, onClick = { onSetThemeMode(code) })
                             Text(stringResource(res), modifier = Modifier.padding(start = 8.dp))
+                        }
+                    }
+                    FadeInItem(120) {
+                        val uriHandler = LocalUriHandler.current
+                        val context = LocalContext.current
+                        val versionName = remember {
+                            try {
+                                context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "1.0"
+                            } catch (e: Exception) { "1.0" }
+                        }
+                        Card(modifier = Modifier.fillMaxWidth()) {
+                            Column(Modifier.padding(16.dp)) {
+                                Text(stringResource(R.string.set_about_title), style = MaterialTheme.typography.titleMedium)
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    stringResource(R.string.set_about_version, versionName),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(Modifier.height(12.dp))
+                                Text(stringResource(R.string.set_about_text), style = MaterialTheme.typography.bodySmall)
+                                Spacer(Modifier.height(12.dp))
+                                OutlinedButton(
+                                    onClick = { uriHandler.openUri("https://github.com/Samovarsky/MaterialTrim") },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) { Text(stringResource(R.string.set_about_source)) }
+                                Spacer(Modifier.height(8.dp))
+                                OutlinedButton(
+                                    onClick = { uriHandler.openUri("https://github.com/Samovarsky/MaterialTrim/blob/main/LICENSE") },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) { Text(stringResource(R.string.set_about_license)) }
+                            }
                         }
                     }
                     Spacer(Modifier.height(12.dp))

@@ -224,4 +224,9 @@
     <string name="msg_va_replace_ok">Аудио заменено</string>
     <string name="msg_va_remove_ok">Аудио удалено</string>
     <string name="screen_video_tools">Видео-инструменты</string>
+    <string name="set_about_title">О приложении и лицензии</string>
+    <string name="set_about_version">Версия %1$s</string>
+    <string name="set_about_text">Приложение распространяется свободно под лицензией GNU GPL v3 без каких-либо гарантий.\n\nИспользуемые открытые компоненты:\n• FFmpeg &amp; FFmpegKit (GPL v3 / LGPL v3)\n• x264 (GPL v2+), OpenH264 (BSD 2-Clause), LAME (LGPL), libvorbis (BSD)\n• AndroidX, Jetpack Compose, Kotlin Coroutines (Apache License 2.0)</string>
+    <string name="set_about_source">Исходный код (GitHub)</string>
+    <string name="set_about_license">Текст лицензии GNU GPL v3</string>
 </resources>

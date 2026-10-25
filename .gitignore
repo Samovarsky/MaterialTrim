@@ -8,3 +8,4 @@
 .externalNativeBuild
 .cxx
 /app/build
+/app/release
