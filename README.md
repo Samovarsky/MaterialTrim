@@ -55,12 +55,6 @@ Requirements: **Android Studio Ladybug+**, **JDK 17**, **AGP 9.x**. First Gradle
 | Jetpack Compose, Material 3 | Apache-2.0 |
 | AndroidX (Lifecycle, DocumentFile, Activity) | Apache-2.0 |
 
-## License
-
-This project is licensed under the **GNU General Public License v3.0** — see [LICENSE](LICENSE) for the full text.
-
-> The GPL choice is not optional: the project ships **libx264** (itself GPL) via FFmpegKit, which forces a copyleft license on the whole derived work. Any fork that distributes binaries must release its source under compatible GPL terms.
-
 ## Development / AI assistance
 
 This project was developed with the assistance of a generative AI coding
@@ -68,6 +62,13 @@ assistant for code generation and diagnostics. Architecture, debugging,
 design decisions, testing and final verification were performed by the
 human maintainer. The AI was used as a tool, not as an author; all shipped
 code was reviewed, corrected and validated by hand before each release.
+
+## License
+
+This project is licensed under the **GNU General Public License v3.0** — see [LICENSE](LICENSE) for the full text.
+
+> The GPL choice is not optional: the project ships **libx264** (itself GPL) via FFmpegKit, which forces a copyleft license on the whole derived work. Any fork that distributes binaries must release its source under compatible GPL terms.
+
 
 ---
 
@@ -94,10 +95,6 @@ code was reviewed, corrected and validated by hand before each release.
 
 Требования: Android Studio Ladybug+, JDK 17, AGP 9.x. Команды клонирования и сборки — в английской секции выше (`./gradlew assembleDebug`).
 
-## Лицензия
-
-Проект распространяется под **GNU General Public License v3.0** — полный текст в файле [LICENSE](LICENSE). Выбор GPL не случаен: в сборке присутствует libx264 (GPL) через FFmpegKit, что требует copyleft для всего производного кода.
-
 ## Разработка / помощь ИИ
 
 Проект создавался с использованием генеративного ИИ-ассистента для
@@ -105,3 +102,9 @@ code was reviewed, corrected and validated by hand before each release.
 решения, тестирование и финальная проверка выполнены человеком-мейнтейнером.
 ИИ использовался как инструмент, а не как автор: весь публикуемый код
 проходил ручную ревизию, исправления и валидацию перед каждым релизом.
+
+## Лицензия
+
+Проект распространяется под **GNU General Public License v3.0** — полный текст в файле [LICENSE](LICENSE). Выбор GPL не случаен: в сборке присутствует libx264 (GPL) через FFmpegKit, что требует copyleft для всего производного кода.
+
+
