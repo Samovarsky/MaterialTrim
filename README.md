@@ -49,7 +49,7 @@ Requirements: **Android Studio Ladybug+**, **JDK 17**, **AGP 9.x**. First Gradle
 
 | Library | License |
 |---|---|
-| FFmpegKit (GPL variant) | LGPL-3.0 / GPL-3.0 |
+| FFmpegKit (GPL build) | GPL-3.0 |
 | libx264 | GPL-2.0+ |
 | libopenh264 | BSD-2-Clause |
 | Jetpack Compose, Material 3 | Apache-2.0 |
