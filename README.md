@@ -5,6 +5,7 @@
 [![Compose](https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
 [![Android](https://img.shields.io/badge/Android-24+-3DDC84?logo=android)](https://developer.android.com/)
 [![FFmpegKit](https://img.shields.io/badge/FFmpegKit-GPL-red)](https://github.com/arthenica/ffmpeg-kit)
+[![Add to Obtainium](https://img.shields.io/badge/Obtainium-Add%20app-3DDC84?logo=android)](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.samovarsky.materialtrim%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FSamovarsky%2FMaterialTrim%22%2C%22author%22%3A%22Samovarsky%22%2C%22name%22%3A%22Material%20Trim%22%7D)
 
 An offline audio & video editor for Android, built with Jetpack Compose and FFmpegKit. Trim, merge, convert, apply effects, edit metadata, export GIFs — all on device. No ads,no network.
 
@@ -44,8 +45,6 @@ cd MaterialTrim
 ```
 
 Requirements: **Android Studio Ladybug+**, **JDK 17**, **AGP 9.x**. First Gradle sync downloads FFmpegKit binaries (~60 MB per ABI).
-
-[![Add to Obtainium](https://img.shields.io/badge/Obtainium-Add%20app-3DDC84?logo=android)](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.samovarsky.materialtrim%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FSamovarsky%2FMaterialTrim%22%2C%22author%22%3A%22Samovarsky%22%2C%22name%22%3A%22Material%20Trim%22%7D)
 
 ## Dependencies
 
@@ -96,8 +95,6 @@ This project is licensed under the **GNU General Public License v3.0** — see [
 ## Сборка
 
 Требования: Android Studio Ladybug+, JDK 17, AGP 9.x. Команды клонирования и сборки — в английской секции выше (`./gradlew assembleDebug`).
-
-[![Добавить в Obtainium](https://img.shields.io/badge/Obtainium-%D0%94%D0%BE%D0%B1%D0%B0%D0%B2%D0%B8%D1%82%D1%8C-3DDC84?logo=android)](https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22com.samovarsky.materialtrim%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FSamovarsky%2FMaterialTrim%22%2C%22author%22%3A%22Samovarsky%22%2C%22name%22%3A%22Material%20Trim%22%7D)
 
 ## Зависимости
 
