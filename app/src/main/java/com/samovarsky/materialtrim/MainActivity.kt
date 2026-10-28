@@ -9,6 +9,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
@@ -17,10 +18,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -37,7 +42,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -73,6 +77,7 @@ class MainActivity : ComponentActivity() {
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             val vm: AudioEditorViewModel = viewModel()
             val st by vm.state.collectAsState()
@@ -240,75 +245,80 @@ fun MusicEditorApp(viewModel: AudioEditorViewModel = viewModel()) {
     ) { uri ->
         uri?.let { out -> viewModel.batchConvertAudio(out) }
     }
-    Scaffold(
-        snackbarHost = {
-            SnackbarHost(
-                hostState = snackbarHostState,
-                modifier = Modifier.padding(bottom = 72.dp)
-            ) { data ->
-                Snackbar(
-                    containerColor = if (snackbarIsError) MaterialTheme.colorScheme.errorContainer
-                    else MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = if (snackbarIsError) MaterialTheme.colorScheme.onErrorContainer
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                    shape = MaterialTheme.shapes.extraLarge
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = if (snackbarIsError) Icons.Rounded.Error else Icons.Rounded.CheckCircle,
-                            contentDescription = null,
-                            tint = if (snackbarIsError) MaterialTheme.colorScheme.onErrorContainer
-                            else MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Text(data.visuals.message)
-                    }
-                }
-            }
-        },
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        stringResource(
-                            when (state.currentScreen) {
-                                EditorScreen.Home -> R.string.app_name
-                                EditorScreen.Trim -> R.string.screen_trim
-                                EditorScreen.TrimLossless -> R.string.screen_trim_lossless
-                                EditorScreen.VideoTrim -> R.string.screen_video_trim
-                                EditorScreen.Merge -> R.string.screen_merge
-                                EditorScreen.Converter -> R.string.screen_converter
-                                EditorScreen.Split -> R.string.screen_split
-                                EditorScreen.ExtractAudio -> R.string.screen_extract
-                                EditorScreen.Effects -> R.string.screen_effects
-                                EditorScreen.Metadata -> R.string.screen_metadata
-                                EditorScreen.History -> R.string.screen_history
-                                EditorScreen.VideoTools -> R.string.screen_video_tools
-                                EditorScreen.Settings -> R.string.screen_settings
-                            }
-                        )
-                    )
-                },
-                navigationIcon = {
-                    if (state.currentScreen != EditorScreen.Home) {
-                        IconButton(onClick = { viewModel.navigate(EditorScreen.Home) }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.nav_back))
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        Scaffold(
+            snackbarHost = {
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier.padding(bottom = 72.dp)
+                ) { data ->
+                    Snackbar(
+                        containerColor = if (snackbarIsError) MaterialTheme.colorScheme.errorContainer
+                        else MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = if (snackbarIsError) MaterialTheme.colorScheme.onErrorContainer
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        shape = MaterialTheme.shapes.extraLarge
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (snackbarIsError) Icons.Rounded.Error else Icons.Rounded.CheckCircle,
+                                contentDescription = null,
+                                tint = if (snackbarIsError) MaterialTheme.colorScheme.onErrorContainer
+                                else MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Text(data.visuals.message)
                         }
                     }
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.navigate(EditorScreen.Settings) }) {
-                        Icon(Icons.Default.Settings, stringResource(R.string.screen_settings))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                }
+            },
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            stringResource(
+                                when (state.currentScreen) {
+                                    EditorScreen.Home -> R.string.app_name
+                                    EditorScreen.Trim -> R.string.screen_trim
+                                    EditorScreen.TrimLossless -> R.string.screen_trim_lossless
+                                    EditorScreen.VideoTrim -> R.string.screen_video_trim
+                                    EditorScreen.Merge -> R.string.screen_merge
+                                    EditorScreen.Converter -> R.string.screen_converter
+                                    EditorScreen.Split -> R.string.screen_split
+                                    EditorScreen.ExtractAudio -> R.string.screen_extract
+                                    EditorScreen.Effects -> R.string.screen_effects
+                                    EditorScreen.Metadata -> R.string.screen_metadata
+                                    EditorScreen.History -> R.string.screen_history
+                                    EditorScreen.VideoTools -> R.string.screen_video_tools
+                                    EditorScreen.Settings -> R.string.screen_settings
+                                }
+                            )
+                        )
+                    },
+                    navigationIcon = {
+                        if (state.currentScreen != EditorScreen.Home) {
+                            IconButton(onClick = { viewModel.navigate(EditorScreen.Home) }) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.nav_back))
+                            }
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { viewModel.navigate(EditorScreen.Settings) }) {
+                            Icon(Icons.Default.Settings, stringResource(R.string.screen_settings))
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
                 )
-            )
-        }
-    ) { innerPadding ->
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-            Box(modifier = Modifier.padding(innerPadding)) {
+            },
+            contentWindowInsets = WindowInsets(0, 0, 0, 0)
+        ) { innerPadding ->
+            Box(
+                Modifier
+                    .padding(innerPadding)
+                    .padding(WindowInsets.navigationBars.asPaddingValues())
+            ) {
                 AnimatedContent(
                     targetState = state.currentScreen,
                     transitionSpec = {

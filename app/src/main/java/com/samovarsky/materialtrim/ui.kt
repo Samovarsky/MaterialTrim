@@ -98,8 +98,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.net.Uri
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.foundation.layout.PaddingValues
 
 fun formatDuration(millis: Long): String {
     val s = (millis / 1000) % 60
@@ -151,9 +151,12 @@ fun HomeScreen(
     onAddClick: () -> Unit,
     onRemoveFile: (String) -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item { Text(stringResource(R.string.home_loaded_files), style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.tertiary) }
@@ -1918,10 +1921,27 @@ fun VideoToolsScreen(
     val context = LocalContext.current
     val videoUri = state.videoToolsUri
     val videoName = videoUri?.let { getFileName(context, it) } ?: ""
-    var gifStart by remember { mutableStateOf("0") }
-    var gifEnd by remember { mutableStateOf("5") }
+    val totalDuration = remember(videoUri) {
+        if (videoUri != null) AudioFileUtils.getAudioDuration(context, videoUri) else 0L
+    }
+    var gifStartMs by remember(videoUri) { mutableLongStateOf(0L) }
+    var gifEndMs by remember(videoUri) {
+        mutableLongStateOf(if (totalDuration > 0) 5000L.coerceAtMost(totalDuration) else 0L)
+    }
+    var gifStartTimeText by remember(videoUri) { mutableStateOf(formatTimeMs(0L)) }
+    var gifEndTimeText by remember(videoUri) { mutableStateOf(formatTimeMs(gifEndMs)) }
     var gifFps by remember { mutableIntStateOf(12) }
     var gifWidth by remember { mutableIntStateOf(480) }
+    fun setGifStart(ms: Long) {
+        val v = ms.coerceIn(0L, (gifEndMs - 1).coerceAtLeast(0L))
+        gifStartMs = v
+        gifStartTimeText = formatTimeMs(v)
+    }
+    fun setGifEnd(ms: Long) {
+        val v = ms.coerceIn(gifStartMs + 1, totalDuration.coerceAtLeast(1L))
+        gifEndMs = v
+        gifEndTimeText = formatTimeMs(v)
+    }
     var tfWidth by remember { mutableStateOf("640") }
     var tfHeight by remember { mutableStateOf("-1") }
     var tfTranspose by remember { mutableIntStateOf(-1) }
@@ -1933,9 +1953,7 @@ fun VideoToolsScreen(
     val saveGif = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/gif")) { uri ->
         uri?.let { out ->
             val v = videoUri ?: return@let
-            val s = gifStart.toDoubleOrNull() ?: 0.0
-            val e = gifEnd.toDoubleOrNull() ?: (s + 5.0)
-            viewModel.videoToGif(v, s, e, gifFps, gifWidth, out)
+            viewModel.videoToGif(v, gifStartMs / 1000.0, gifEndMs / 1000.0, gifFps, gifWidth, out)
         }
     }
     val saveTf = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("video/mp4")) { uri ->
@@ -2006,10 +2024,50 @@ fun VideoToolsScreen(
                     Column(Modifier.padding(16.dp)) {
                         Text(stringResource(R.string.vtools_gif), style = MaterialTheme.typography.titleSmall)
                         Spacer(Modifier.height(8.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(value = gifStart, onValueChange = { gifStart = it }, label = { Text(stringResource(R.string.vtools_gif_start)) }, modifier = Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                            OutlinedTextField(value = gifEnd, onValueChange = { gifEnd = it }, label = { Text(stringResource(R.string.vtools_gif_end)) }, modifier = Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                        Text(stringResource(R.string.trim_selection), style = MaterialTheme.typography.titleSmall)
+                        Spacer(Modifier.height(8.dp))
+                        TrimTimeline(
+                            totalDuration = totalDuration,
+                            startMs = gifStartMs,
+                            endMs = gifEndMs,
+                            onStartChange = { setGifStart(it) },
+                            onEndChange = { setGifEnd(it) }
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.trim_start), style = MaterialTheme.typography.labelSmall)
+                                OutlinedTextField(
+                                    value = gifStartTimeText,
+                                    onValueChange = { txt ->
+                                        gifStartTimeText = txt
+                                        parseTimeMs(txt)?.let { v -> setGifStart(v) }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                    textStyle = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(stringResource(R.string.trim_end), style = MaterialTheme.typography.labelSmall)
+                                OutlinedTextField(
+                                    value = gifEndTimeText,
+                                    onValueChange = { txt ->
+                                        gifEndTimeText = txt
+                                        parseTimeMs(txt)?.let { v -> setGifEnd(v) }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    singleLine = true,
+                                    textStyle = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         }
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "${stringResource(R.string.trim_fragment)} ${formatTimeMs((gifEndMs - gifStartMs).coerceAtLeast(0L))}",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                         Spacer(Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(value = gifFps.toString(), onValueChange = { gifFps = it.toIntOrNull() ?: 12 }, label = { Text(stringResource(R.string.vtools_gif_fps)) }, modifier = Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
