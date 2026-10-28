@@ -9,7 +9,7 @@
 
 An offline audio & video editor for Android, built with Jetpack Compose and FFmpegKit. Trim, merge, convert, apply effects, edit metadata, export GIFs — all on device. No ads,no network.
 
-> [Читать по-русски ↓](#material-trim-русский)
+> [Читать на русском языке ↓](#material-trim-русский)
 
 ## Features
 
