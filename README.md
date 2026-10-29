@@ -68,9 +68,6 @@ code was reviewed, corrected and validated by hand before each release.
 
 This project is licensed under the **GNU General Public License v3.0** — see [LICENSE](LICENSE) for the full text.
 
-> The GPL choice is not optional: the project ships **libx264** (itself GPL) via FFmpegKit, which forces a copyleft license on the whole derived work. Any fork that distributes binaries must release its source under compatible GPL terms.
-
-
 ---
 
 # Material Trim (русский)
