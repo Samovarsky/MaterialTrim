@@ -113,6 +113,4 @@ This project is licensed under the **GNU General Public License v3.0** — see [
 
 ## Лицензия
 
-Проект распространяется под **GNU General Public License v3.0** — полный текст в файле [LICENSE](LICENSE). Выбор GPL не случаен: в сборке присутствует libx264 (GPL) через FFmpegKit, что требует copyleft для всего производного кода.
-
-
+Проект распространяется под **GNU General Public License v3.0** — полный текст в файле [LICENSE](LICENSE).
