@@ -1,7 +1,13 @@
 package com.samovarsky.materialtrim
+
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
+import android.net.Uri
+import android.os.Build
+import android.widget.VideoView
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -13,6 +19,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -52,6 +59,7 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.VideoFile
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -70,6 +78,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -84,34 +93,29 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import android.os.Build
-import android.widget.VideoView
-import androidx.compose.runtime.key
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import android.net.Uri
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.foundation.layout.PaddingValues
 
 fun formatDuration(millis: Long): String {
     val s = (millis / 1000) % 60
     val m = (millis / 1000) / 60
     return "%d:%02d".format(m, s)
 }
+
 fun formatTimeMs(ms: Long): String {
     val minutes = ms / 60000
     val seconds = (ms % 60000) / 1000
     val millis = ms % 1000
     return "%02d:%02d.%03d".format(minutes, seconds, millis)
 }
+
 fun parseTimeMs(text: String): Long? = try {
     val parts = text.split(":")
     if (parts.size != 2) null else {
@@ -124,6 +128,7 @@ fun parseTimeMs(text: String): Long? = try {
 } catch (e: Exception) {
     null
 }
+
 @Composable
 fun FadeInItem(delayMs: Int, content: @Composable () -> Unit) {
     var visible by remember { mutableStateOf(false) }
@@ -134,6 +139,7 @@ fun FadeInItem(delayMs: Int, content: @Composable () -> Unit) {
                 slideInVertically(tween(300, delayMillis = delayMs)) { it / 8 }
     ) { content() }
 }
+
 @Composable
 fun HomeScreen(
     state: EditorState,
@@ -151,9 +157,7 @@ fun HomeScreen(
     onAddClick: () -> Unit,
     onRemoveFile: (String) -> Unit
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
@@ -221,6 +225,7 @@ fun HomeScreen(
         ) { Icon(Icons.Default.Add, stringResource(R.string.home_add)) }
     }
 }
+
 @Composable
 fun ToolCard(
     icon: ImageVector,
@@ -257,6 +262,7 @@ fun ToolCard(
         }
     }
 }
+
 @Composable
 fun TrimScreen(
     state: EditorState,
@@ -335,7 +341,7 @@ fun TrimScreen(
                 val album = r.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM) ?: ""
                 val year = r.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DATE)?.toIntOrNull() ?: 0
                 onPrefill(title, artist, album, year)
-            } catch (e: Exception) {  } finally { r.release() }
+            } catch (e: Exception) { } finally { r.release() }
         }
     }
     fun applyStart(ms: Long) {
@@ -395,9 +401,7 @@ fun TrimScreen(
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             listOf(15, 30, 45).forEach { sec ->
                                 FilledTonalButton(
-                                    onClick = {
-                                        applyEnd((startMs + sec * 1000L).coerceAtMost(totalDuration))
-                                    },
+                                    onClick = { applyEnd((startMs + sec * 1000L).coerceAtMost(totalDuration)) },
                                     modifier = Modifier.weight(1f)
                                 ) { Text(stringResource(R.string.trim_sec, sec), maxLines = 1, softWrap = false) }
                             }
@@ -473,7 +477,6 @@ fun TrimScreen(
                         Spacer(Modifier.height(8.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                             IconButton(onClick = {
-                                if (player == null) return@IconButton
                                 if (isPlaying) {
                                     player.pause()
                                     isPlaying = false
@@ -639,6 +642,7 @@ fun TrimScreen(
         }
     }
 }
+
 @Composable
 fun TrimLosslessScreen(
     state: EditorState,
@@ -816,7 +820,6 @@ fun TrimLosslessScreen(
                         Spacer(Modifier.height(8.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                             IconButton(onClick = {
-                                if (player == null) return@IconButton
                                 if (isPlaying) {
                                     player.pause()
                                     isPlaying = false
@@ -867,6 +870,7 @@ fun TrimLosslessScreen(
         }
     }
 }
+
 @Composable
 fun VideoTrimScreen(
     state: EditorState,
@@ -898,16 +902,14 @@ fun VideoTrimScreen(
     fun seekToExact(ms: Int) {
         val mp = mediaPlayer
         val clamped = ms.coerceIn(0, (totalDuration - 1).toInt().coerceAtLeast(0))
-        if (mp != null && android.os.Build.VERSION.SDK_INT >= 26) {
+        if (mp != null && Build.VERSION.SDK_INT >= 26) {
             mp.seekTo(clamped.toLong(), MediaPlayer.SEEK_CLOSEST)
         } else {
             videoView?.seekTo(clamped)
         }
         positionMs = clamped.toLong()
     }
-    fun seekToStartMs() {
-        seekToExact(startMs.toInt())
-    }
+    fun seekToStartMs() { seekToExact(startMs.toInt()) }
     LaunchedEffect(videoUri) { onUpdateTrim(0L, totalDuration) }
     LaunchedEffect(isVideoPlaying, videoUri) {
         if (isVideoPlaying) {
@@ -1163,6 +1165,7 @@ fun VideoTrimScreen(
         }
     }
 }
+
 @Composable
 fun TrimTimeline(
     totalDuration: Long,
@@ -1216,6 +1219,7 @@ fun TrimTimeline(
         Spacer(modifier = Modifier.weight((1f - endF).coerceAtLeast(eps)))
     }
 }
+
 @Composable
 fun MergeScreen(
     state: EditorState,
@@ -1303,6 +1307,7 @@ fun MergeScreen(
         }
     }
 }
+
 @Composable
 fun ConverterScreen(
     state: EditorState,
@@ -1375,6 +1380,7 @@ fun ConverterScreen(
         }
     }
 }
+
 @Composable
 fun SplitScreen(state: EditorState, onSave: (Long) -> Unit, onBackClick: () -> Unit) {
     BackHandler { onBackClick() }
@@ -1424,6 +1430,7 @@ fun SplitScreen(state: EditorState, onSave: (Long) -> Unit, onBackClick: () -> U
         }
     }
 }
+
 @Composable
 fun ExtractAudioScreen(
     state: EditorState,
@@ -1479,6 +1486,7 @@ fun ExtractAudioScreen(
         }
     }
 }
+
 @Composable
 fun EffectsScreen(
     state: EditorState,
@@ -1573,6 +1581,7 @@ fun EffectsScreen(
         }
     }
 }
+
 @Composable
 fun MetadataScreen(
     state: EditorState,
@@ -1611,7 +1620,7 @@ fun MetadataScreen(
                 curArtist = artist
                 curAlbum = album
                 curYear = if (year > 0) year.toString() else ""
-            } catch (e: Exception) {  } finally { r.release() }
+            } catch (e: Exception) { } finally { r.release() }
         }
     }
     val coverBitmap = remember(coverBytes) {
@@ -1740,6 +1749,7 @@ fun MetadataScreen(
         }
     }
 }
+
 @Composable
 fun HistoryScreen(state: EditorState, onClear: () -> Unit, onBackClick: () -> Unit) {
     BackHandler { onBackClick() }
@@ -1796,6 +1806,7 @@ fun HistoryScreen(state: EditorState, onClear: () -> Unit, onBackClick: () -> Un
         }
     }
 }
+
 @Composable
 fun SettingsScreen(
     state: EditorState,
@@ -1911,6 +1922,7 @@ fun SettingsScreen(
         }
     }
 }
+
 @Composable
 fun VideoToolsScreen(
     state: EditorState,
@@ -1932,6 +1944,8 @@ fun VideoToolsScreen(
     var gifEndTimeText by remember(videoUri) { mutableStateOf(formatTimeMs(gifEndMs)) }
     var gifFps by remember { mutableIntStateOf(12) }
     var gifWidth by remember { mutableIntStateOf(480) }
+    var frameTimeText by remember { mutableStateOf("00:00.000") }
+    var frameMs by remember { mutableLongStateOf(0L) }
     fun setGifStart(ms: Long) {
         val v = ms.coerceIn(0L, (gifEndMs - 1).coerceAtLeast(0L))
         gifStartMs = v
@@ -1944,9 +1958,19 @@ fun VideoToolsScreen(
     }
     var tfWidth by remember { mutableStateOf("640") }
     var tfHeight by remember { mutableStateOf("-1") }
-    var tfTranspose by remember { mutableIntStateOf(-1) }
-    var tfMirror by remember { mutableStateOf(false) }
+    var tfRotate by remember { mutableIntStateOf(0) }
+    var tfFlipH by remember { mutableStateOf(false) }
+    var tfFlipV by remember { mutableStateOf(false) }
     var tfSpeed by remember { mutableStateOf("1.0") }
+    var cropW by remember { mutableStateOf("320") }
+    var cropH by remember { mutableStateOf("240") }
+    var cropX by remember { mutableStateOf("-1") }
+    var cropY by remember { mutableStateOf("-1") }
+    var compCodec by remember { mutableStateOf("h264") }
+    var compUseBitrate by remember { mutableStateOf(false) }
+    var compCrf by remember { mutableIntStateOf(23) }
+    var compBitrate by remember { mutableIntStateOf(2000) }
+    var compPreset by remember { mutableStateOf("medium") }
     val pickVideo = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let { viewModel.setVideoToolsUri(it) }
     }
@@ -1956,13 +1980,35 @@ fun VideoToolsScreen(
             viewModel.videoToGif(v, gifStartMs / 1000.0, gifEndMs / 1000.0, gifFps, gifWidth, out)
         }
     }
+    val saveFrameLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("image/png")) { uri ->
+        uri?.let { out ->
+            val v = videoUri ?: return@let
+            viewModel.extractFrame(v, frameMs, out)
+        }
+    }
     val saveTf = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("video/mp4")) { uri ->
         uri?.let { out ->
             val v = videoUri ?: return@let
             val w = tfWidth.toIntOrNull() ?: 640
             val h = tfHeight.toIntOrNull() ?: -1
             val sp = tfSpeed.toDoubleOrNull() ?: 1.0
-            viewModel.transformVideo(v, w, h, tfTranspose, tfMirror, sp, out)
+            viewModel.transformVideo(v, w, h, tfRotate, tfFlipH, tfFlipV, sp, out)
+        }
+    }
+    val saveCrop = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("video/mp4")) { uri ->
+        uri?.let { out ->
+            val v = videoUri ?: return@let
+            val w = cropW.toIntOrNull() ?: 0
+            val h = cropH.toIntOrNull() ?: 0
+            val x = cropX.toIntOrNull() ?: -1
+            val y = cropY.toIntOrNull() ?: -1
+            viewModel.cropVideo(v, w, h, x, y, out)
+        }
+    }
+    val saveComp = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("*/*")) { uri ->
+        uri?.let { out ->
+            val v = videoUri ?: return@let
+            viewModel.compressVideo(v, compCodec, compUseBitrate, compCrf, compBitrate, compPreset, out)
         }
     }
     val saveRemoveAudio = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("video/mp4")) { uri ->
@@ -2080,6 +2126,33 @@ fun VideoToolsScreen(
                     }
                 }
             }
+            FadeInItem(90) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(stringResource(R.string.vtools_frame_title), style = MaterialTheme.typography.titleSmall)
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = frameTimeText,
+                            onValueChange = { txt ->
+                                frameTimeText = txt
+                                frameMs = parseTimeMs(txt) ?: frameMs
+                            },
+                            label = { Text(stringResource(R.string.vtools_frame_at)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            textStyle = MaterialTheme.typography.bodySmall
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Button(
+                            onClick = { saveFrameLauncher.launch("frame.png") },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = videoUri != null
+                        ) {
+                            Text(stringResource(R.string.vtools_frame_btn))
+                        }
+                    }
+                }
+            }
             FadeInItem(120) {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp)) {
@@ -2090,22 +2163,121 @@ fun VideoToolsScreen(
                             OutlinedTextField(value = tfHeight, onValueChange = { tfHeight = it }, label = { Text(stringResource(R.string.vtools_tf_h)) }, modifier = Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                         }
                         Spacer(Modifier.height(8.dp))
-                        Text(stringResource(R.string.vtools_tf_rot), style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.vtools_tf_rotate), style = MaterialTheme.typography.labelSmall)
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            listOf(-1 to R.string.vtools_tf_rot_none, 0 to R.string.vtools_tf_rot_cw, 2 to R.string.vtools_tf_rot_ccw, 1 to R.string.vtools_tf_flip_h, 3 to R.string.vtools_tf_flip_v).forEach { (code, res) ->
-                                FilledTonalButton(onClick = { tfTranspose = code }, modifier = Modifier.weight(1f)) { Text(stringResource(res), maxLines = 1, softWrap = false, style = MaterialTheme.typography.labelSmall) }
+                            listOf(0 to "0°", 90 to "90°", 180 to "180°", 270 to "270°").forEach { (deg, label) ->
+                                FilledTonalButton(
+                                    onClick = { tfRotate = deg },
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.filledTonalButtonColors(
+                                        containerColor = if (tfRotate == deg) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                                        contentColor = if (tfRotate == deg) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                ) { Text(label, maxLines = 1, softWrap = false, style = MaterialTheme.typography.labelSmall) }
                             }
                         }
                         Spacer(Modifier.height(8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Column(Modifier.weight(1f)) { Text(stringResource(R.string.vtools_tf_mirror)) }
-                            Switch(checked = tfMirror, onCheckedChange = { tfMirror = it })
+                            Column(Modifier.weight(1f)) { Text(stringResource(R.string.vtools_tf_flip_h)) }
+                            Switch(checked = tfFlipH, onCheckedChange = { tfFlipH = it })
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) { Text(stringResource(R.string.vtools_tf_flip_v)) }
+                            Switch(checked = tfFlipV, onCheckedChange = { tfFlipV = it })
                         }
                         Spacer(Modifier.height(8.dp))
                         OutlinedTextField(value = tfSpeed, onValueChange = { tfSpeed = it }, label = { Text(stringResource(R.string.vtools_tf_speed)) }, modifier = Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                         Spacer(Modifier.height(12.dp))
                         Button(onClick = { saveTf.launch("transformed.mp4") }, modifier = Modifier.fillMaxWidth()) {
                             Text(stringResource(R.string.vtools_tf_btn))
+                        }
+                    }
+                }
+            }
+            FadeInItem(150) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(stringResource(R.string.vtools_crop), style = MaterialTheme.typography.titleSmall)
+                        Spacer(Modifier.height(8.dp))
+                        Text(stringResource(R.string.vtools_crop_hint), style = MaterialTheme.typography.bodySmall)
+                        Spacer(Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(value = cropW, onValueChange = { cropW = it }, label = { Text(stringResource(R.string.vtools_crop_w)) }, modifier = Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                            OutlinedTextField(value = cropH, onValueChange = { cropH = it }, label = { Text(stringResource(R.string.vtools_crop_h)) }, modifier = Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(value = cropX, onValueChange = { cropX = it }, label = { Text(stringResource(R.string.vtools_crop_x)) }, modifier = Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                            OutlinedTextField(value = cropY, onValueChange = { cropY = it }, label = { Text(stringResource(R.string.vtools_crop_y)) }, modifier = Modifier.weight(1f), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                        }
+                        Spacer(Modifier.height(12.dp))
+                        Button(
+                            onClick = { saveCrop.launch("cropped.mp4") },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = videoUri != null && (cropW.toIntOrNull() ?: 0) > 0 && (cropH.toIntOrNull() ?: 0) > 0
+                        ) {
+                            Text(stringResource(R.string.vtools_crop_btn))
+                        }
+                    }
+                }
+            }
+            FadeInItem(165) {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(stringResource(R.string.vtools_comp), style = MaterialTheme.typography.titleSmall)
+                        Spacer(Modifier.height(8.dp))
+                        Text(stringResource(R.string.vtools_comp_hint), style = MaterialTheme.typography.bodySmall)
+                        Spacer(Modifier.height(8.dp))
+                        Text(stringResource(R.string.vtools_comp_codec), style = MaterialTheme.typography.labelSmall)
+                        listOf("h264" to "H.264 (MP4)", "h265" to "H.265 (MP4)", "vp9" to "VP9 (WebM)").forEach { (code, label) ->
+                            Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                RadioButton(selected = compCodec == code, onClick = { compCodec = code })
+                                Text(label, modifier = Modifier.padding(start = 8.dp))
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        Text(stringResource(R.string.vtools_comp_mode), style = MaterialTheme.typography.labelSmall)
+                        Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(selected = !compUseBitrate, onClick = { compUseBitrate = false })
+                            Text(stringResource(R.string.vtools_comp_crf), modifier = Modifier.padding(start = 8.dp))
+                        }
+                        Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(selected = compUseBitrate, onClick = { compUseBitrate = true })
+                            Text(stringResource(R.string.vtools_comp_br), modifier = Modifier.padding(start = 8.dp))
+                        }
+                        if (!compUseBitrate) {
+                            Spacer(Modifier.height(8.dp))
+                            Text("${stringResource(R.string.vtools_comp_crf_val)} $compCrf", style = MaterialTheme.typography.bodySmall)
+                            Slider(value = compCrf.toFloat(), onValueChange = { compCrf = it.toInt() }, valueRange = 16f..40f)
+                        } else {
+                            Spacer(Modifier.height(8.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                listOf(1000, 2000, 4000, 8000).forEach { b ->
+                                    FilledTonalButton(onClick = { compBitrate = b }, modifier = Modifier.weight(1f)) {
+                                        Text("${b / 1000}M", maxLines = 1, softWrap = false, style = MaterialTheme.typography.labelSmall)
+                                    }
+                                }
+                            }
+                        }
+                        if (compCodec != "vp9") {
+                            Spacer(Modifier.height(8.dp))
+                            Text(stringResource(R.string.vtools_comp_preset), style = MaterialTheme.typography.labelSmall)
+                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                listOf("veryfast", "fast", "medium", "slow").forEach { p ->
+                                    FilledTonalButton(onClick = { compPreset = p }, modifier = Modifier.weight(1f)) {
+                                        Text(p, maxLines = 1, softWrap = false, style = MaterialTheme.typography.labelSmall)
+                                    }
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(12.dp))
+                        Button(
+                            onClick = { saveComp.launch(if (compCodec == "vp9") "compressed.webm" else "compressed.mp4") },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = videoUri != null
+                        ) {
+                            Text(stringResource(R.string.vtools_comp_btn))
                         }
                     }
                 }

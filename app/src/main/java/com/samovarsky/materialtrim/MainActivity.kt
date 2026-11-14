@@ -28,6 +28,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
@@ -45,6 +48,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -472,12 +479,45 @@ fun MusicEditorApp(viewModel: AudioEditorViewModel = viewModel()) {
                         )
                     }
                 }
-                if (state.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
+                OperationOverlay(
+                    viewModel = viewModel,
+                    isLoading = state.isLoading,
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
             }
         }
     }
 }
 fun getFileName(context: Context, uri: Uri): String =
     try { DocumentFile.fromSingleUri(context, uri)?.name ?: "Unknown" } catch (e: Exception) { "Unknown" }
+@Composable
+private fun OperationOverlay(
+    viewModel: AudioEditorViewModel,
+    isLoading: Boolean,
+    modifier: Modifier = Modifier
+) {
+    if (!isLoading) return
+    val statsTime by viewModel.stats.collectAsState()
+    Card(
+        modifier = modifier.padding(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "${stringResource(R.string.op_processed)} ${formatTimeMs(statsTime)}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            TextButton(onClick = { viewModel.cancelOperation() }) {
+                Text(stringResource(R.string.op_cancel))
+            }
+        }
+    }
+}

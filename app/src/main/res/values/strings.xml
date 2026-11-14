@@ -194,7 +194,7 @@
     <string name="msg_normalize_ok">Нормализация завершена</string>
     <string name="msg_batch_ok">Конвертировано %1$d из %2$d файлов</string>
     <string name="tool_vtools_title">Видео-инструменты</string>
-    <string name="tool_vtools_desc">GIF, масштаб/поворот, аудио</string>
+    <string name="tool_vtools_desc">GIF, кадр, трансформ, crop, сжатие, замена аудио</string>
     <string name="vtools_title">Видео-инструменты</string>
     <string name="vtools_hint">Выберите видео для GIF, трансформа и работы со звуком</string>
     <string name="vtools_change">Видео выбрано. Можно сменить.</string>
@@ -211,8 +211,6 @@
     <string name="vtools_tf_rot_none">Нет</string>
     <string name="vtools_tf_rot_cw">90°</string>
     <string name="vtools_tf_rot_ccw">270°</string>
-    <string name="vtools_tf_flip_h">Гориз.</string>
-    <string name="vtools_tf_flip_v">Верт.</string>
     <string name="vtools_tf_mirror">Зеркало по горизонтали</string>
     <string name="vtools_tf_speed">Скорость (0.5–2.0)</string>
     <string name="vtools_tf_btn">Применить и сохранить MP4</string>
@@ -229,4 +227,31 @@
     <string name="set_about_text">Приложение распространяется свободно под лицензией GNU GPL v3 без каких-либо гарантий.\n\nИспользуемые открытые компоненты:\n• FFmpeg &amp; FFmpegKit (GPL v3 / LGPL v3)\n• x264 (GPL v2+), OpenH264 (BSD 2-Clause), LAME (LGPL), libvorbis (BSD)\n• AndroidX, Jetpack Compose, Kotlin Coroutines (Apache License 2.0)</string>
     <string name="set_about_source">Исходный код (GitHub)</string>
     <string name="set_about_license">Текст лицензии GNU GPL v3</string>
+    <string name="op_processed">Обработано</string>
+    <string name="op_cancel">Отмена</string>
+    <string name="vtools_frame_title">Кадр из видео</string>
+    <string name="vtools_frame_at">Момент (мм:сс.мс)</string>
+    <string name="vtools_frame_btn">Извлечь кадр (PNG)</string>
+    <string name="msg_frame_ok">Кадр сохранён</string>
+    <string name="vtools_crop">Обрезка кадра (crop)</string>
+    <string name="vtools_crop_hint">Прямоугольник вырезается из каждого кадра; X/Y = −1 ставит его по центру. Аудио сохраняется без перекодирования.</string>
+    <string name="vtools_crop_w">Ширина, px</string>
+    <string name="vtools_crop_h">Высота, px</string>
+    <string name="vtools_crop_x">X (−1 = центр)</string>
+    <string name="vtools_crop_y">Y (−1 = центр)</string>
+    <string name="vtools_crop_btn">Обрезать кадр (MP4)</string>
+    <string name="msg_crop_ok">Видео обрезано</string>
+    <string name="vtools_comp">Сжатие видео</string>
+    <string name="vtools_comp_hint">H.264 гарантирован; H.265 и VP9 могут отсутствовать в сборке — тогда ffmpeg вернёт ошибку «unknown encoder». VP9 сохраняет в WebM (аудио Vorbis), H.264/H.265 — в MP4 (аудио AAC 128k). Меньше CRF = лучше качество и больший файл; для H.265 оптимально 24–32, для VP9 30–45.</string>
+    <string name="vtools_comp_codec">Кодек</string>
+    <string name="vtools_comp_mode">Управление качеством</string>
+    <string name="vtools_comp_crf">Постоянный CRF (качество)</string>
+    <string name="vtools_comp_br">Постоянный битрейт</string>
+    <string name="vtools_comp_crf_val">CRF</string>
+    <string name="vtools_comp_preset">Скорость кодирования (preset)</string>
+    <string name="vtools_comp_btn">Сжать видео</string>
+    <string name="msg_comp_ok">Видео сжато (%1$s)</string>
+    <string name="vtools_tf_rotate">Поворот (по часовой)</string>
+    <string name="vtools_tf_flip_h">Зеркально по горизонтали</string>
+    <string name="vtools_tf_flip_v">Зеркально по вертикали</string>
 </resources>

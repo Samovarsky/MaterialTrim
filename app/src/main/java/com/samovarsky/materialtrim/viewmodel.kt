@@ -17,6 +17,7 @@ import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
+import com.arthenica.ffmpegkit.FFmpegKitConfig
 sealed class EditorScreen {
     object Home : EditorScreen()
     object Trim : EditorScreen()
@@ -79,6 +80,8 @@ data class EditorState(
 class AudioEditorViewModel(application: Application) : AndroidViewModel(application) {
     private val _state = MutableStateFlow(EditorState())
     val state: StateFlow<EditorState> = _state
+    private val _stats = MutableStateFlow(0L)
+    val stats: StateFlow<Long> = _stats
     private val undoStack = mutableListOf<TrimSnapshot>()
     private val redoStack = mutableListOf<TrimSnapshot>()
     private val historyMax = 20
@@ -86,6 +89,9 @@ class AudioEditorViewModel(application: Application) : AndroidViewModel(applicat
         loadHistory()
         loadLang()
         loadTheme()
+        FFmpegKitConfig.enableStatisticsCallback { stats ->
+            _stats.value = stats.time.toLong()
+        }
     }
     private fun loadLang() {
         val code = getApplication<Application>()
@@ -131,7 +137,13 @@ class AudioEditorViewModel(application: Application) : AndroidViewModel(applicat
         _state.value.let { _state.value = it.copy(selectedFiles = it.selectedFiles.filter { f -> f.id != id }) }
     fun setMessage(msg: String?, isError: Boolean = false) =
         _state.value.let { _state.value = it.copy(message = msg, messageIsError = isError) }
-    private fun setLoading(loading: Boolean) = _state.value.let { _state.value = it.copy(isLoading = loading) }
+    private fun setLoading(loading: Boolean) {
+        if (loading) _stats.value = 0L
+        _state.value = _state.value.copy(isLoading = loading)
+    }
+    fun cancelOperation() {
+        FFmpegKit.cancel()
+    }
     fun updateTrim(start: Long, end: Long) = _state.value.let { _state.value = it.copy(trimStart = start, trimEnd = end) }
     fun setFadeIn(sec: Int) = _state.value.let { _state.value = it.copy(fadeInSec = sec) }
     fun setFadeOut(sec: Int) = _state.value.let { _state.value = it.copy(fadeOutSec = sec) }
@@ -760,7 +772,27 @@ class AudioEditorViewModel(application: Application) : AndroidViewModel(applicat
             finally { setLoading(false) }
         }
     }
-    fun transformVideo(inputUri: Uri, width: Int, height: Int, transpose: Int, mirror: Boolean, speed: Double, outputUri: Uri) {
+    fun extractFrame(inputUri: Uri, atMs: Long, outputUri: Uri) {
+        viewModelScope.launch {
+            setLoading(true)
+            try {
+                val ctx = getApplication<Application>()
+                val input = copyToCache(ctx, inputUri, "in_frame.mp4")
+                val output = File(ctx.cacheDir, "out_frame.png")
+                val session = runFfmpeg(
+                    "-y -ss ${atMs / 1000.0} -i ${input.absolutePath} -frames:v 1 ${output.absolutePath}"
+                )
+                if (session.returnCode.isValueSuccess && output.length() > 0) {
+                    copyToUri(ctx, output, outputUri)
+                    addHistory("frame.png", outputUri, "frame")
+                    setMessage(getApplication<Application>().getString(R.string.msg_frame_ok))
+                } else setMessage(session.failStackTrace?.take(120) ?: getApplication<Application>().getString(R.string.msg_generic_err), true)
+                input.delete()
+            } catch (e: Throwable) { setMessage(e.message ?: getApplication<Application>().getString(R.string.msg_generic_err), true) }
+            finally { setLoading(false) }
+        }
+    }
+    fun transformVideo(inputUri: Uri, width: Int, height: Int, rotate: Int, flipH: Boolean, flipV: Boolean, speed: Double, outputUri: Uri) {
         viewModelScope.launch {
             setLoading(true)
             try {
@@ -769,8 +801,13 @@ class AudioEditorViewModel(application: Application) : AndroidViewModel(applicat
                 val output = File(ctx.cacheDir, "out_tf.mp4")
                 val parts = mutableListOf<String>()
                 parts.add("scale=$width:$height")
-                if (transpose in 0..7) parts.add("transpose=$transpose")
-                if (mirror) parts.add("hflip")
+                when (rotate) {
+                    90 -> parts.add("transpose=1")
+                    180 -> parts.add("transpose=1,transpose=1")
+                    270 -> parts.add("transpose=1,transpose=1,transpose=1")
+                }
+                if (flipH) parts.add("hflip")
+                if (flipV) parts.add("vflip")
                 val sp = speed.coerceIn(0.5, 2.0)
                 if (sp != 1.0) parts.add("setpts=PTS/$sp")
                 val vf = parts.joinToString(",")
@@ -783,6 +820,65 @@ class AudioEditorViewModel(application: Application) : AndroidViewModel(applicat
                     copyToUri(ctx, output, outputUri)
                     addHistory("transformed.mp4", outputUri, "video_transform")
                     setMessage(getApplication<Application>().getString(R.string.msg_tf_ok))
+                } else setMessage(session.failStackTrace?.take(120) ?: getApplication<Application>().getString(R.string.msg_generic_err), true)
+                input.delete()
+            } catch (e: Throwable) { setMessage(e.message ?: getApplication<Application>().getString(R.string.msg_generic_err), true) }
+            finally { setLoading(false) }
+        }
+    }
+    fun cropVideo(inputUri: Uri, width: Int, height: Int, x: Int, y: Int, outputUri: Uri) {
+        viewModelScope.launch {
+            setLoading(true)
+            try {
+                val ctx = getApplication<Application>()
+                val input = copyToCache(ctx, inputUri, "in_crop.mp4")
+                val output = File(ctx.cacheDir, "out_crop.mp4")
+                val xExpr = if (x < 0) "(iw-$width)/2" else "$x"
+                val yExpr = if (y < 0) "(ih-$height)/2" else "$y"
+                val vf = "crop=$width:$height:$xExpr:$yExpr"
+                val session = runFfmpeg(
+                    "-y -i ${input.absolutePath} -vf \"$vf\" " +
+                            "-c:v libx264 -crf 23 -preset medium -pix_fmt yuv420p -c:a copy -movflags +faststart ${output.absolutePath}"
+                )
+                if (session.returnCode.isValueSuccess && output.length() > 0) {
+                    copyToUri(ctx, output, outputUri)
+                    addHistory("cropped.mp4", outputUri, "video_crop")
+                    setMessage(getApplication<Application>().getString(R.string.msg_crop_ok))
+                } else setMessage(session.failStackTrace?.take(120) ?: getApplication<Application>().getString(R.string.msg_generic_err), true)
+                input.delete()
+            } catch (e: Throwable) { setMessage(e.message ?: getApplication<Application>().getString(R.string.msg_generic_err), true) }
+            finally { setLoading(false) }
+        }
+    }
+    fun compressVideo(inputUri: Uri, codec: String, useBitrate: Boolean, crf: Int, bitrateK: Int, preset: String, outputUri: Uri) {
+        viewModelScope.launch {
+            setLoading(true)
+            try {
+                val ctx = getApplication<Application>()
+                val isWebm = codec == "vp9"
+                val ext = if (isWebm) "webm" else "mp4"
+                val input = copyToCache(ctx, inputUri, "in_comp.mp4")
+                val output = File(ctx.cacheDir, "out_comp.$ext")
+                val vcodec = when (codec) {
+                    "h265" -> "libx265"
+                    "vp9" -> "libvpx-vp9"
+                    else -> "libx264"
+                }
+                val sb = StringBuilder("-y -i ${input.absolutePath} -c:v $vcodec")
+                if (!isWebm) sb.append(" -preset $preset")
+                if (useBitrate) sb.append(" -b:v ${bitrateK}k")
+                else {
+                    sb.append(" -crf $crf")
+                    if (isWebm) sb.append(" -b:v 0")
+                }
+                sb.append(" -pix_fmt yuv420p")
+                sb.append(if (isWebm) " -c:a libvorbis -b:a 128k" else " -c:a aac -b:a 128k -movflags +faststart")
+                sb.append(" ${output.absolutePath}")
+                val session = runFfmpeg(sb.toString())
+                if (session.returnCode.isValueSuccess && output.length() > 0) {
+                    copyToUri(ctx, output, outputUri)
+                    addHistory("compressed.$ext", outputUri, "video_compress")
+                    setMessage(getApplication<Application>().getString(R.string.msg_comp_ok, ext.uppercase()))
                 } else setMessage(session.failStackTrace?.take(120) ?: getApplication<Application>().getString(R.string.msg_generic_err), true)
                 input.delete()
             } catch (e: Throwable) { setMessage(e.message ?: getApplication<Application>().getString(R.string.msg_generic_err), true) }

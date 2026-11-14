@@ -194,7 +194,7 @@
     <string name="msg_normalize_ok">Normalization complete</string>
     <string name="msg_batch_ok">Converted %1$d of %2$d files</string>
     <string name="tool_vtools_title">Video tools</string>
-    <string name="tool_vtools_desc">GIF, scale/rotate, audio</string>
+    <string name="tool_vtools_desc">GIF, frame, transform, crop, compress, swap audio</string>
     <string name="vtools_title">Video tools</string>
     <string name="vtools_hint">Pick a video for GIF, transform and audio work</string>
     <string name="vtools_change">Video selected. You can change it.</string>
@@ -211,8 +211,6 @@
     <string name="vtools_tf_rot_none">None</string>
     <string name="vtools_tf_rot_cw">90°</string>
     <string name="vtools_tf_rot_ccw">270°</string>
-    <string name="vtools_tf_flip_h">H-flip</string>
-    <string name="vtools_tf_flip_v">V-flip</string>
     <string name="vtools_tf_mirror">Horizontal mirror</string>
     <string name="vtools_tf_speed">Speed (0.5–2.0)</string>
     <string name="vtools_tf_btn">Apply and save MP4</string>
@@ -229,4 +227,31 @@
     <string name="set_about_text">This application is free software licensed under the GNU GPL v3 without any warranty.\n\nOpen-source components used:\n• FFmpeg &amp; FFmpegKit (GPL v3 / LGPL v3)\n• x264 (GPL v2+), OpenH264 (BSD 2-Clause), LAME (LGPL), libvorbis (BSD)\n• AndroidX, Jetpack Compose, Kotlin Coroutines (Apache License 2.0)</string>
     <string name="set_about_source">Source Code (GitHub)</string>
     <string name="set_about_license">GNU GPL v3 License</string>
+    <string name="op_processed">Processed</string>
+    <string name="op_cancel">Cancel</string>
+    <string name="vtools_frame_title">Video frame</string>
+    <string name="vtools_frame_at">At (mm:ss.ms)</string>
+    <string name="vtools_frame_btn">Extract frame (PNG)</string>
+    <string name="msg_frame_ok">Frame saved</string>
+    <string name="vtools_crop">Crop frame</string>
+    <string name="vtools_crop_hint">The rectangle is cut out of every frame; X/Y = −1 centers it. Audio is kept without re-encoding.</string>
+    <string name="vtools_crop_w">Width, px</string>
+    <string name="vtools_crop_h">Height, px</string>
+    <string name="vtools_crop_x">X (−1 = center)</string>
+    <string name="vtools_crop_y">Y (−1 = center)</string>
+    <string name="vtools_crop_btn">Crop frame (MP4)</string>
+    <string name="msg_crop_ok">Video cropped</string>
+    <string name="vtools_comp">Compress video</string>
+    <string name="vtools_comp_hint">H.264 is guaranteed; H.265 and VP9 may be missing from the build — then ffmpeg returns an “unknown encoder” error. VP9 saves as WebM (Vorbis audio), H.264/H.265 as MP4 (AAC 128k). Lower CRF = better quality and bigger file; H.265 sweet spot 24–32, VP9 30–45.</string>
+    <string name="vtools_comp_codec">Codec</string>
+    <string name="vtools_comp_mode">Quality control</string>
+    <string name="vtools_comp_crf">Constant CRF (quality)</string>
+    <string name="vtools_comp_br">Constant bitrate</string>
+    <string name="vtools_comp_crf_val">CRF</string>
+    <string name="vtools_comp_preset">Encoding speed (preset)</string>
+    <string name="vtools_comp_btn">Compress video</string>
+    <string name="msg_comp_ok">Video compressed (%1$s)</string>
+    <string name="vtools_tf_rotate">Rotate (clockwise)</string>
+    <string name="vtools_tf_flip_h">Mirror horizontally</string>
+    <string name="vtools_tf_flip_v">Mirror vertically</string>
 </resources>
